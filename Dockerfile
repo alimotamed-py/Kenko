@@ -13,8 +13,8 @@ ENV UV_COMPILE_BYTECODE=1 \
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
-# Install production dependencies
-RUN uv sync --frozen --no-dev
+# Install production dependencies only
+RUN uv sync --frozen --no-default-groups
 
 # Copy backend
 COPY Backend ./Backend
