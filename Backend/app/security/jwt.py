@@ -1,10 +1,8 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
-
 import jwt
 from fastapi import HTTPException, status
-
 from app.core.config import settings
 
 
@@ -46,29 +44,15 @@ def create_access_token(
     session_jti: str,
 ) -> tuple[str, str]:
 
-    payload, jti = _build_payload(
-        user_id=user_id,
-        user_type=user_type,
-        token_type="access",
-        expires_delta=timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        ),
-        session_jti=session_jti,
-    )
+    payload, jti = _build_payload(user_id=user_id, user_type=user_type, token_type="access",
+                                  expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+                                  session_jti=session_jti)
 
-    token = jwt.encode(
-        payload,
-        settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
-
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token, jti
 
 
-def create_refresh_token(
-    user_id: int,
-    user_type: str,
-) -> tuple[str, str]:
+def create_refresh_token(user_id: int, user_type: str) -> tuple[str, str]:
 
     payload, jti = _build_payload(
         user_id=user_id,
@@ -79,18 +63,11 @@ def create_refresh_token(
         ),
     )
 
-    token = jwt.encode(
-        payload,
-        settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
-
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token, jti
 
 
-def decode_token(
-    token: str,
-) -> dict[str, Any] | None:
+def decode_token(token: str) -> dict[str, Any] | None:
 
     try:
         return jwt.decode(

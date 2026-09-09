@@ -21,7 +21,6 @@ def consume_refresh_token(jti: str, user_id: int) -> bool:
 
     if data is None:
         return False
-
     try:
         token_data = json.loads(data)
     except json.JSONDecodeError:

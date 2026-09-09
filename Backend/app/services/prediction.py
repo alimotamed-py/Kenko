@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
-
 from app.core.config import settings
+from app.services.recommendations import get_recommendations
 from app.core.exceptions import KenkoError
 from app.core.logging import logger
 from app.schemas.heart_disease import HeartDiseaseInput
@@ -13,6 +13,8 @@ from app.services.encoding import (
     SMOKER_STATUS_MAPPING,
     WEARABLE_OWNER_MAPPING,
 )
+from app.services.risk import get_risk_level
+
 
 
 FEATURE_ORDER = [
@@ -60,49 +62,32 @@ class HeartDiseasePredictor:
             # Encode categorical features
             input_data["sex"] = SEX_MAPPING[input_data["sex"]]
 
-            input_data["family_history"] = FAMILY_HISTORY_MAPPING[
-                input_data["family_history"]
-            ]
+            input_data["family_history"] = FAMILY_HISTORY_MAPPING[input_data["family_history"]]
 
-            input_data["chest_pain_type"] = CHEST_PAIN_MAPPING[
-                input_data["chest_pain_type"]
-            ]
+            input_data["chest_pain_type"] = CHEST_PAIN_MAPPING[input_data["chest_pain_type"]]
 
-            input_data["exercise_induced_angina"] = EXERCISE_ANGINA_MAPPING[
-                input_data["exercise_induced_angina"]
-            ]
+            input_data["exercise_induced_angina"] = EXERCISE_ANGINA_MAPPING[input_data["exercise_induced_angina"]]
 
-            input_data["smoker_status"] = SMOKER_STATUS_MAPPING[
-                input_data["smoker_status"]
-            ]
+            input_data["smoker_status"] = SMOKER_STATUS_MAPPING[input_data["smoker_status"]]
 
-            input_data["wearable_owner"] = WEARABLE_OWNER_MAPPING[
-                input_data["wearable_owner"]
-            ]
+            input_data["wearable_owner"] = WEARABLE_OWNER_MAPPING[input_data["wearable_owner"]]
 
             # Keep exactly the same feature order used during training
-            df = pd.DataFrame(
-                [[input_data[feature] for feature in FEATURE_ORDER]],
-                columns=FEATURE_ORDER,
-            )
+            df = pd.DataFrame([[input_data[feature] for feature in FEATURE_ORDER]], columns=FEATURE_ORDER)
 
             # Scale features
             scaled_data = self.scaler.transform(df)
 
             # Prediction
-            prediction = int(
-                self.model.predict(scaled_data)[0]
-            )
+            prediction = int(self.model.predict(scaled_data)[0])
 
-            logger.info(
-                "Heart disease prediction completed: prediction=%s",
-                prediction,
-            )
+            logger.info("Heart disease prediction completed: prediction=%s", prediction)
 
             # Probability of class 1
-            probability = float(
-                self.model.predict_proba(scaled_data)[0][1]
-            )
+            probability = float(self.model.predict_proba(scaled_data)[0][1])
+            probability_percent = round(probability * 100, 2)
+            risk_level = get_risk_level(probability_percent)
+            recommendations = get_recommendations(data)
 
             if prediction == 1:
                 result = "Heart Disease"
@@ -125,22 +110,17 @@ class HeartDiseasePredictor:
                 "data": {
                     "prediction": prediction,
                     "result": result,
-                    "probability": round(probability * 100, 2),
+                    "probability": probability_percent,
+                    "risk_level": risk_level,
+                    "recommendations": recommendations,
                     "message": message,
                 },
             }
 
         except Exception:
-            logger.exception(
-                "Heart disease prediction failed."
-            )
+            logger.exception("Heart disease prediction failed.")
 
-            raise KenkoError(
-                status_code=500,
-                code="PREDICTION_ERROR",
-                message="Unable to process the prediction.",
-                details=None,
-            )
-
+            raise KenkoError(status_code=500, code="PREDICTION_ERROR", message="Unable to process the prediction.",
+                             details=None)
 
 heart_disease_predictor = HeartDiseasePredictor()

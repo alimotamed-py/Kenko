@@ -4,13 +4,11 @@ from fastapi.responses import JSONResponse
 from app.core.logging import logger
 from app.api.routes.heart_disease import router as heart_disease_router
 from app.api.routes.auth import router as auth_router
+from app.api.routes.history import router as history_router
 from app.core.exceptions import KenkoError
 
 
-app = FastAPI(
-    title="Kenko API",
-    version="1.0.0",
-)
+app = FastAPI(title="Kenko API", version="1.0.0")
 
 
 @app.exception_handler(KenkoError)
@@ -75,6 +73,7 @@ async def global_exception_handler(
 
 app.include_router(heart_disease_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(history_router, prefix="/api/v1")
 
 @app.get("/")
 def root():

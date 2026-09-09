@@ -67,18 +67,9 @@ class Settings(BaseSettings):
 
     @property
     def redis_url(self) -> str:
-        auth = (
-            f":{self.REDIS_PASSWORD}@"
-            if self.REDIS_PASSWORD
-            else ""
-        )
+        auth = (f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else "")
 
-        return (
-            f"redis://{auth}"
-            f"{self.REDIS_HOST}:"
-            f"{self.REDIS_PORT}/"
-            f"{self.REDIS_DB}"
-        )
+        return (f"redis://{auth}" f"{self.REDIS_HOST}:" f"{self.REDIS_PORT}/" f"{self.REDIS_DB}")
 
 
 settings = Settings()

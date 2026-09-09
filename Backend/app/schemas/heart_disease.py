@@ -23,7 +23,7 @@ class HeartDiseaseInput(BaseModel):
     resting_heart_rate: int = Field(..., gt=0)
     max_heart_rate_achieved: int = Field(..., gt=0)
 
-    chest_pain_type: Literal["Asymptomatic", "Non-Anginal Pain", "Atypical Angina", "Typical Angina",]
+    chest_pain_type: Literal["Asymptomatic", "Non-Anginal Pain", "Atypical Angina", "Typical Angina"]
 
     exercise_induced_angina: bool
 
@@ -31,7 +31,7 @@ class HeartDiseaseInput(BaseModel):
 
     family_history: bool
 
-    smoker_status: Literal["Never", "Former", "Current",]
+    smoker_status: Literal["Never", "Former", "Current"]
 
     alcohol_units_per_week: float = Field(..., ge=0)
 
@@ -46,20 +46,26 @@ class HeartDiseaseInput(BaseModel):
     daily_steps: int = Field(..., ge=0)
 
     diet_quality_score: float = Field(..., ge=0, le=100)
-    
-    
+
+
 class HeartDiseasePrediction(BaseModel):
     prediction: Literal[0, 1]
     result: Literal["Heart Disease", "No Heart Disease"]
+
     probability: float = Field(..., ge=0, le=100)
+
+    risk_level: Literal["low", "moderate", "high", "very_high"]
+
+    recommendations: list[str]
+
     message: str
 
 
 class PredictionResponse(BaseModel):
     success: bool
     data: HeartDiseasePrediction
-    
-    
+
+
 class ErrorDetail(BaseModel):
     code: str
     message: str
